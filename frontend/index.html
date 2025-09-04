@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Daily Quote Generator</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>Daily Quote Generator</h1>
+  <div id="quoteBox">
+    <h2 id="quoteText">Click "New Quote" to start</h2>
+    <p id="quoteAuthor"></p>
+    <button id="newQuoteBtn">New Quote</button>
+    <button id="saveBtn">❤️ Save Favorite</button>
+    <button onclick="window.location.href='favorites.html'">📖 View Favorites</button>
+  </div>
+
+  <script>
+    const apiBase = "http://localhost:3000/api/quotes";
+    let currentQuote = null;
+
+    // Fetch random quote
+    async function getRandomQuote() {
+      try {
+        const res = await fetch(`${apiBase}/random`);
+        const data = await res.json();
+        currentQuote = data;
+        document.getElementById("quoteText").innerText = data.text;
+        document.getElementById("quoteAuthor").innerText = data.author;
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    // Save current quote
+    async function saveFavorite() {
+      if (!currentQuote || !currentQuote.text) {
+        alert("No quote to save!");
+        return;
+      }
+      try {
+        const res = await fetch(`${apiBase}/favorite`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            text: currentQuote.text,
+            author: currentQuote.author
+          })
+        });
+
+        const data = await res.json();
+        if (data.quote) {
+          alert(`${data.message}\nSaved: "${data.quote.text}" - ${data.quote.author}`);
+        } else {
+          alert(data.message || "Something went wrong!");
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Error saving favorite!");
+      }
+    }
+
+    // Event Listeners
+    document.getElementById("newQuoteBtn").addEventListener("click", getRandomQuote);
+    document.getElementById("saveBtn").addEventListener("click", saveFavorite);
+  </script>
+</body>
+</html>
